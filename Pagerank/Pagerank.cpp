@@ -28,6 +28,8 @@ public:
 
 	size_t size() { return data.size(); }
 
+	P(P& other) : data(other.data), nE(other.nE), nE2(other.nE2) { }
+
 	P(const matrix& m, double alpha = ALPHA) {
 		size_t nV = m.size();
 		data = vector<vector<double> >(nV, vector<double>(nV, 0.0));
@@ -121,6 +123,35 @@ void print_matrix(const matrix& matrix) {
 	}
 }
 
+vector<double> approx_eig_nontrivial(matrix& m, size_t itr = 10000) {
+	size_t nV = m.size();
+	vector<double> p(nV, 0.0);
+	p[0] = 1.0;
+	vector<double> D;
+	for (auto& v : m) {
+		if (v.size() > 0) {
+			D.push_back(0);
+		} else {
+			D.push_back(1.0 / nV);
+		}
+	}
+
+	for (size_t i = 0; i < itr; ++i) {
+		vector<double> temp(nV, 0.0);
+		double sum = 0.0;
+		for (size_t j = 0; j < nV; ++j) {
+			for (auto& k : m[j])
+				temp[k] += ALPHA*p[j] / m[j].size();
+			sum += ALPHA*p[j] * D[j] + p[j]*(1.0 - ALPHA) / nV;
+		}
+		for (size_t j = 0; j < nV; ++j) {
+			temp[j] += sum;
+		}
+		p = temp;
+	}
+	return p;
+}
+
 //approximate eigenvector
 vector<double> approx_eig(P& P, size_t itr = 100) {
 	const size_t nV = P.size();
@@ -145,8 +176,8 @@ vector<double> approx_eig(P& P, size_t itr = 100) {
 	return eig;
 }
 
-void print_eig(vector<int> eig) {
-	for (const int& i : eig) { cout << i << " "; } cout << endl;
+void print_eig(vector<double> eig) {
+	for (const double& i : eig) { cout << i << " "; } cout << endl;
 }
 
 vector<pair<size_t, size_t> > Random_Surfer_Sim(const matrix& m, const string& filename, int& nItr) {
@@ -201,7 +232,7 @@ void printPagerank(vector<pair<size_t, size_t> >& pagerank, const string& filepa
 
 int main()
 {
-	string filepath = "C:\\Users\\biu\\Documents\\Visual Studio 2015\\Projects\\PageRank\\Data\\";
+	string filepath = "C:\\Users\\biz\\Documents\\Visual Studio 2015\\Projects\\PageRank\\Data\\";
 	vector<string> filenames;
 	filenames.push_back("three.txt");
 	filenames.push_back("tiny.txt");
@@ -211,14 +242,15 @@ int main()
 
 	for (const string& filename : filenames) {
 		matrix m = adjacency_matrix(filepath + "input\\" + filename);
-
+		vector<double> e = approx_eig_nontrivial(m);
+		print_eig(e);
 		//pagerank by random surfer simulation
 		int nItr;
-		vector<pair<size_t, size_t> > pagerank = Random_Surfer_Sim(m, filename, nItr);
-		printPagerank(pagerank, filepath, filename, nItr);
+		//vector<pair<size_t, size_t> > pagerank = Random_Surfer_Sim(m, filename, nItr);
+		//printPagerank(pagerank, filepath, filename, nItr);
 
 		//print_matrix(m);
-		auto p = P(m);
+		//auto p = P(m);
 		//p.print();
 		}
     return 0;
