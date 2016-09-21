@@ -77,6 +77,17 @@ public:
 		}
 	}
 
+	vector<double> mul(vector<double>& v) {
+		vector<double> tmp;
+		for (size_t j = 0; j < size(); ++j) {
+			double res = 0.0;
+			for (size_t i = 0; i < size(); ++i)
+				res += v[i] * data[i][j];
+			tmp.push_back(res);
+		}
+		return tmp;
+	}
+
 };
 
 matrix adjacency_matrix(const string& filename) {
@@ -111,27 +122,28 @@ void print_matrix(const matrix& matrix) {
 }
 
 //approximate eigenvector
-/*
-vector<int> approx_eig(const P& P) {
-	size_t nV = P.size();
-	vector<int> eig(nV, 1);
+vector<double> approx_eig(P& P, size_t itr = 100) {
+	const size_t nV = P.size();
+	cout << nV << endl;
+	vector<double> eig(nV, 1.0);
 
-//method 1: approximate eigenvector by p_i = p_(i-1)P, i = 1..m
+	//method 1: approximate eigenvector by p_i = p_(i-1)P, i = 1..m
 #ifdef METHOD_1
+	for (size_t i = 0; i < itr; ++i) {
+		eig = P.mul(eig);
+	}
+#endif
+
+#ifdef METHOD_2
 
 #endif
 
-#ifdef METHOD_1
-
-#endif
-
-#ifdef METHOD_1
+#ifdef METHOD_3
 
 #endif
 
 	return eig;
 }
-*/
 
 void print_eig(vector<int> eig) {
 	for (const int& i : eig) { cout << i << " "; } cout << endl;
@@ -189,7 +201,7 @@ void printPagerank(vector<pair<size_t, size_t> >& pagerank, const string& filepa
 
 int main()
 {
-	string filepath = "C:\\Users\\biz\\Documents\\Visual Studio 2015\\Projects\\PageRank\\Data\\";
+	string filepath = "C:\\Users\\biu\\Documents\\Visual Studio 2015\\Projects\\PageRank\\Data\\";
 	vector<string> filenames;
 	filenames.push_back("three.txt");
 	filenames.push_back("tiny.txt");
