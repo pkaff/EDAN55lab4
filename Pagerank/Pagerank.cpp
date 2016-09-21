@@ -6,6 +6,7 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 #define ALPHA (0.85)
 #define METHOD_1
@@ -136,16 +137,18 @@ void print_eig(vector<int> eig) {
 	for (const int& i : eig) { cout << i << " "; } cout << endl;
 }
 
-vector<size_t> Random_Surfer_Sim(const matrix& m, const string& filename) {
-	vector<size_t> pagerank(m.size(), 0);
-	size_t nItr = 0;
+vector<pair<size_t, size_t> > Random_Surfer_Sim(const matrix& m, const string& filename, int& nItr) {
+	vector<pair<size_t, size_t> > pagerank(m.size());
+	for (size_t i = 0; i < pagerank.size(); ++i) {
+		pagerank[i] = make_pair(i, 0);
+	}
 	cout << "Enter number of iterations for file " + filename + ": ";
 	cin >> nItr;
 	if (nItr <= 0) { 
 		cout << "number of iterations must be larger than 0" << endl;
 	}
 	size_t currPage = 0;
-	++pagerank[currPage];
+	pagerank[currPage].second++;
 	for (size_t i = 0; i < nItr; ++i) {
 		if (rand() % 100 < ALPHA) {
 			//go to random connected page
@@ -160,9 +163,21 @@ vector<size_t> Random_Surfer_Sim(const matrix& m, const string& filename) {
 			size_t nextPage = rand() % nConnections;
 			currPage = nextPage;
 		}
-		++pagerank[currPage];
+		pagerank[currPage].second++;
 	}
 	return pagerank;
+}
+
+void printPagerank(vector<pair<size_t, size_t> >& pagerank, const string& filepath, const string& filename, int nItr) {
+	sort(pagerank.begin(), pagerank.end(), [](pair<size_t, size_t>& p1, pair<size_t, size_t>& p2) { return p1.second > p2.second; });
+	ofstream ofs(filepath + "output\\" + filename);
+	ofs << filename;
+	for (size_t i = 0; i < min((size_t)5, pagerank.size()); ++i) {
+
+		double percent = (pagerank[i].second / (double)nItr) * 100;
+		ofs << "\t" << pagerank[i].first << " (" << percent << "%)";
+	}
+	ofs << endl;
 }
 
 int main()
@@ -170,12 +185,12 @@ int main()
 	string filepath = "C:\\Users\\biz\\Documents\\Visual Studio 2015\\Projects\\PageRank\\Data\\";
 	string filename = "three.txt";
 
-	string full_path = filepath + "input\\" + filename;
-	matrix m = adjacency_matrix(full_path);
+	matrix m = adjacency_matrix(filepath + "input\\" + filename);
 
 	//pagerank by random surfer simulation
-	vector<size_t> pagerank = Random_Surfer_Sim(m, filename);
-	ofstream ofs(filepath + "output\\" + filename);
+	int nItr;
+	vector<pair<size_t, size_t> > pagerank = Random_Surfer_Sim(m, filename, nItr);
+	printPagerank(pagerank, filepath, filename, nItr);
 
 	//print_matrix(m);
 	auto p = P(m);
