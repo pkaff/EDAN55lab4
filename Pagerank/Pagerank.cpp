@@ -150,7 +150,12 @@ vector<pair<size_t, size_t> > Random_Surfer_Sim(const matrix& m, const string& f
 	size_t currPage = 0;
 	pagerank[currPage].second++;
 	for (size_t i = 0; i < nItr; ++i) {
-		if (rand() % 100 < ALPHA) {
+		if (m[currPage].size() == 0) {
+			//go to random page
+			size_t nConnections = m.size();
+			size_t nextPage = rand() % nConnections;
+			currPage = nextPage;
+		} else if (rand() % 100 < ALPHA) {
 			//go to random connected page
 			size_t nConnections = m[currPage].size();
 			size_t randConnection = rand() % nConnections;
@@ -173,8 +178,10 @@ void printPagerank(vector<pair<size_t, size_t> >& pagerank, const string& filepa
 	ofstream ofs(filepath + "output\\" + filename);
 	ofs << filename;
 	for (size_t i = 0; i < min((size_t)5, pagerank.size()); ++i) {
-
-		double percent = (pagerank[i].second / (double)nItr) * 100;
+		double percent = 0;
+		if (nItr != 0) {
+			percent = (pagerank[i].second / (double)nItr) * 100;
+		}
 		ofs << "\t" << pagerank[i].first << " (" << percent << "%)";
 	}
 	ofs << endl;
@@ -183,18 +190,25 @@ void printPagerank(vector<pair<size_t, size_t> >& pagerank, const string& filepa
 int main()
 {
 	string filepath = "C:\\Users\\biz\\Documents\\Visual Studio 2015\\Projects\\PageRank\\Data\\";
-	string filename = "three.txt";
+	vector<string> filenames;
+	filenames.push_back("three.txt");
+	filenames.push_back("tiny.txt");
+	filenames.push_back("medium.txt");
+	filenames.push_back("wikipedia.txt");
+	filenames.push_back("p2p-Gnutella08-mod.txt");
 
-	matrix m = adjacency_matrix(filepath + "input\\" + filename);
+	for (const string& filename : filenames) {
+		matrix m = adjacency_matrix(filepath + "input\\" + filename);
 
-	//pagerank by random surfer simulation
-	int nItr;
-	vector<pair<size_t, size_t> > pagerank = Random_Surfer_Sim(m, filename, nItr);
-	printPagerank(pagerank, filepath, filename, nItr);
+		//pagerank by random surfer simulation
+		int nItr;
+		vector<pair<size_t, size_t> > pagerank = Random_Surfer_Sim(m, filename, nItr);
+		printPagerank(pagerank, filepath, filename, nItr);
 
-	//print_matrix(m);
-	auto p = P(m);
-	//p.print();
+		//print_matrix(m);
+		auto p = P(m);
+		//p.print();
+		}
     return 0;
 }
 
