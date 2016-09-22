@@ -188,29 +188,28 @@ vector<pair<size_t, size_t> > Random_Surfer_Sim(const matrix& m, const string& f
 	cout << "Enter number of iterations for file " + filename + ": ";
 	cin >> nItr;
 	if (nItr <= 0) { 
-		cout << "number of iterations must be larger than 0" << endl;
+		cout << "Number of iterations must be larger than 0" << endl;
 	}
 	size_t currPage = 0;
 	pagerank[currPage].second++;
 	for (size_t i = 0; i < nItr; ++i) {
+		size_t nextPage;
 		if (m[currPage].size() == 0) {
 			//go to random page
 			size_t nConnections = m.size();
-			size_t nextPage = rand() % nConnections;
-			currPage = nextPage;
-		} else if (rand() % 100 < ALPHA) {
+			nextPage = rand() % nConnections;
+		} else if (rand() % 100 < ALPHA*100) {
 			//go to random connected page
 			size_t nConnections = m[currPage].size();
 			size_t randConnection = rand() % nConnections;
-			size_t nextPage = m[currPage][randConnection];
-			currPage = nextPage;
+			nextPage = m[currPage][randConnection];
 		}
 		else {
 			//go to random page
 			size_t nConnections = m.size();
-			size_t nextPage = rand() % nConnections;
-			currPage = nextPage;
+			nextPage = rand() % nConnections;
 		}
+		currPage = nextPage;
 		pagerank[currPage].second++;
 	}
 	return pagerank;
@@ -242,16 +241,15 @@ int main()
 
 	for (const string& filename : filenames) {
 		matrix m = adjacency_matrix(filepath + "input\\" + filename);
-		vector<double> e = approx_eig_nontrivial(m);
-		print_eig(e);
+
+		//Pagerank by linalg
+		//vector<double> e = approx_eig_nontrivial(m);
+		//print_eig(e);
+
 		//pagerank by random surfer simulation
 		int nItr;
-		//vector<pair<size_t, size_t> > pagerank = Random_Surfer_Sim(m, filename, nItr);
-		//printPagerank(pagerank, filepath, filename, nItr);
-
-		//print_matrix(m);
-		//auto p = P(m);
-		//p.print();
+		vector<pair<size_t, size_t> > pagerank = Random_Surfer_Sim(m, filename, nItr);
+		printPagerank(pagerank, filepath, filename, nItr);
 		}
     return 0;
 }
